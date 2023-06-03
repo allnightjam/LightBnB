@@ -35,16 +35,6 @@ const getUserWithEmail = function(email) {
   return promise;
   };
 
-//   let resolvedUser = null;
-//   for (const userId in users) {
-//     const user = users[userId];
-//     if (user.email.toLowerCase() === email.toLowerCase()) {
-//       resolvedUser = user;
-//     }
-//   }
-//   return Promise.resolve(resolvedUser);
-// };
-
 /**
  * Get a single user from the database given their id.
  * @param {string} id The id of the user.
@@ -67,8 +57,7 @@ const getUserWithId = function (id) {
   });
   return promise;
 }
-//   return Promise.resolve(users[id]);
-// };
+
 
 /**
  * Add a new user to the database.
@@ -93,13 +82,6 @@ const addUser = function (user) {
   return promise;
 }
 
-
-//   const userId = Object.keys(users).length + 1;
-//   user.id = userId;
-//   users[userId] = user;
-//   return Promise.resolve(user);
-// };
-
 /// Reservations
 
 /**
@@ -121,25 +103,6 @@ const getAllReservations = function (guest_id, limit = 10) {
   const queryParams = [guest_id, limit];
   return pool.query(queryString, queryParams).then((res) => res.rows);
 };
-
-
-// const getAllReservations = function (guest_id, limit = 10) {
-//   const queryString = 
-//   `SELECT properties.id AS id, properties.title, properties.cost_per_night, start_date, end_date, cover_photo_url, thumbnail_photo_url, AVG(rating) AS average_rating
-//   FROM reservations
-//   JOIN properties ON reservations.property_id = properties.id
-//   JOIN property_reviews ON property_reviews.property_id = properties.id
-//   WHERE reservations.guest_id = $1 
-//   AND end_date < now()::date 
-//   GROUP BY properties.id, reservations.id
-//   ORDER BY reservations.start_date
-//   LIMIT $2;`;
-//   const queryParams = [guest_id, limit];
-//   return pool.query(queryString, queryParams).then((res) => res.rows);
-// };
-
-  //   return getAllProperties(null, 2);
-// };
 
 /// Properties
 
@@ -212,22 +175,6 @@ const getAllProperties = (options, limit = 10) => {
 
   return pool.query(queryString, queryParams).then((res) => res.rows);
   };
-// const getAllProperties = (options, limit = 10) => {
-//   return pool
-//     .query(`SELECT properties.id, owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night, parking_spaces, number_of_bathrooms, number_of_bedrooms, country, street, city, province, post_code, active, AVG(property_reviews.rating) AS average_rating
-//     FROM properties 
-//     LEFT JOIN property_reviews ON properties.id = property_id
-//     GROUP BY properties.id
-//     ORDER BY cost_per_night
-//     LIMIT $1`, [limit])
-//     .then((result) => {
-//       console.log(result.rows);
-//       return result.rows;
-//     })
-//     .catch((err) => {
-//       console.log(err.message);
-//     });
-// };
 
 /**
  * Add a property to the database
@@ -260,11 +207,6 @@ const addProperty = function (property) {
   return pool.query(queryString, values).then((res) => res.rows[0]);
 };
 
-  //   const propertyId = Object.keys(properties).length + 1;
-//   property.id = propertyId;
-//   properties[propertyId] = property;
-//   return Promise.resolve(property);
-// };
 
 module.exports = {
   getUserWithEmail,
