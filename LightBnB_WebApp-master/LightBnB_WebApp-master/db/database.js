@@ -108,29 +108,35 @@ const addUser = function (user) {
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function (guest_id, limit = 10) {
-const promise = pool
-  .query(
-  `SELECT reservations.id, properties.title, properties.cost_per_night, reservations.start_date, AVG(rating) AS average_rating
+  const queryString = 
+  `SELECT properties.*, reservations.*, AVG(property_reviews.rating) AS average_rating
   FROM reservations
-  JOIN properties ON reservations.property_id = properties.id
-  JOIN property_reviews ON property_reviews.property_id = properties.id
+  JOIN properties ON properties.id = reservations.property_id
+  JOIN property_reviews ON properties.id = property_reviews.property_id
   WHERE reservations.guest_id = $1 
-  AND end_date < NOW()::DATE 
+  AND end_date < now()::date 
   GROUP BY properties.id, reservations.id
   ORDER BY reservations.start_date
-  LIMIT $2;`,
-  [guest_id, limit])
-  .then((res) => {
-    if(!res.rows.length) {
-      return (null)
-    }
-    return res.rows[0];
-  })
-  .catch((err) => {
-    console.log(err.message);
-  });
-  return promise;
-}
+  LIMIT $2;`;
+  const queryParams = [guest_id, limit];
+  return pool.query(queryString, queryParams).then((res) => res.rows);
+};
+
+
+// const getAllReservations = function (guest_id, limit = 10) {
+//   const queryString = 
+//   `SELECT properties.id AS id, properties.title, properties.cost_per_night, start_date, end_date, cover_photo_url, thumbnail_photo_url, AVG(rating) AS average_rating
+//   FROM reservations
+//   JOIN properties ON reservations.property_id = properties.id
+//   JOIN property_reviews ON property_reviews.property_id = properties.id
+//   WHERE reservations.guest_id = $1 
+//   AND end_date < now()::date 
+//   GROUP BY properties.id, reservations.id
+//   ORDER BY reservations.start_date
+//   LIMIT $2;`;
+//   const queryParams = [guest_id, limit];
+//   return pool.query(queryString, queryParams).then((res) => res.rows);
+// };
 
   //   return getAllProperties(null, 2);
 // };
@@ -152,12 +158,13 @@ const getAllProperties = (options, limit = 10) => {
   SELECT properties.*,
   AVG(property_reviews.rating) AS average_rating
   FROM properties
-  JOIN property_reviews ON properties.id = property_reviews.property_id`;
+  JOIN property_reviews ON properties.id = property_reviews.property_id
+  WHERE 1=1 `;
 
   if (options.city) {
     counter++;
     queryParams.push(`%${options.city}%`);
-    queryString += `WHERE city ILIKE $${queryParams.length}
+    queryString += `AND city ILIKE $${queryParams.length}
     `;
   }
 
@@ -169,7 +176,7 @@ const getAllProperties = (options, limit = 10) => {
       `;
       console.log("HERE!");
     } else if (counter === 1) {
-      queryString += `WHERE owner_id = $${queryParams.length}
+      queryString += `AND owner_id = $${queryParams.length}
       `;
     }
   }
@@ -197,7 +204,6 @@ const getAllProperties = (options, limit = 10) => {
   }
   queryParams.push(limit);
   queryString += `
-  GROUP BY properties.id
   ORDER BY cost_per_night
   LIMIT $${queryParams.length};
   `;
